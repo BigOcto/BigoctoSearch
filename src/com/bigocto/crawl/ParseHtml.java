@@ -20,7 +20,6 @@ import org.jsoup.select.Elements;
  */
 public class ParseHtml {
 
-
 	public static HashMap<String,Integer> map;
 	public static int TOTAL_NUM=0;
 	public static int item_ID=1;
@@ -143,7 +142,7 @@ public class ParseHtml {
     	Map.Entry entry;
     	while(it_.hasNext()){
     		entry=(Entry) it_.next();
-    		
+
     	 	jd.Term_value_unique(entry.getKey().toString(),item_ID, term_ID, doc_id, (int) entry.getValue());
     	 	//jd.dictionary_up(term_ID, entry.getKey().toString());
             term_ID++;

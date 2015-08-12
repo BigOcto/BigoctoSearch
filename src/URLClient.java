@@ -4,7 +4,7 @@ import java.net.*;
 /*
  * A client to retrieve a web page using the URL package, instead
  * of raw socket. <p>
- * 
+ *
  * @author Xiannong Meng
  * @date   September 8, 2004
  *

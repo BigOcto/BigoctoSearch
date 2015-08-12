@@ -21,7 +21,7 @@ public class JDBCConnect {
 		String driver="com.mysql.jdbc.Driver";
 		String url="jdbc:mysql://127.0.0.1:3306/crawler";
 		String user="root";
-		String password="admin";
+		String password="root";
 		
 		try{
 			
@@ -167,7 +167,7 @@ public void Serch_Input(String str){
 		String search_in="SELECT url,term_frequency from crawler.document ,crawler.dictionary,crawler.posting_list"
 					+" where crawler.dictionary.term_id=crawler.posting_list.term_id"
 					+" and crawler.document.doc_id=crawler.posting_list.doc_id"
-					+" and crawler.dictionary.term_value='东南大学'"
+					+" and crawler.dictionary.term_value='锟斤拷锟较达拷学'"
 					+" order by term_frequency desc;";
 		
 		try {
