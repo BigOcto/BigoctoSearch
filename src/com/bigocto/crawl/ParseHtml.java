@@ -143,7 +143,7 @@ public class ParseHtml {
     	while(it_.hasNext()){
     		entry=(Entry) it_.next();
 
-    	 	jd.Term_value_unique(entry.getKey().toString(),item_ID, term_ID, doc_id, (int) entry.getValue());
+    	 	jd.Term_value_unique(entry.getKey().toString(),item_ID, term_ID, doc_id, (Integer) entry.getValue());
     	 	//jd.dictionary_up(term_ID, entry.getKey().toString());
             term_ID++;
             item_ID++;

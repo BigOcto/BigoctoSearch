@@ -1,69 +1,121 @@
 package com.bigocto.crawl;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.CoreConnectionPNames;
+
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
 /**
- * Created by zhangyu
+ * Created by bigocto(zhangyu)
  * on 2015/8/12.
  */
-public abstract class crawler {
-    public int mThreadNum = 0;
+public abstract class crawler{
+    public int mThreadNum = 1;
     public static Queue<String> mQueue = new LinkedList<String>();
     public static List<String> m_list = new LinkedList<String>();
     public static List<String> mTimeOutList = new LinkedList<String>();
-    public static int Doc_ID = 1;
-    public static ParseHtml parseH = new ParseHtml();
+
+    public pageCrawlerListener mListener;
 
     public void setThreadNum(int threadNum) {
         mThreadNum = threadNum;
     }
 
     public static boolean list_filter(String url, List<String> list) {
-        Iterator<String> it = list.iterator();
-        while (it.hasNext()) {
-            if (url.equals(it.next())) {
+        for (String aList : list) {
+            if (url.equals(aList)) {
                 return false;
             }
         }
         return true;
     }
 
-
+    /**
+     * URL out queue
+     * @return URL
+     * @throws Exception
+     */
     public synchronized String deQueueUrl() throws Exception {
-        if (m_list != null) {
+        if (mQueue != null) {
             String url = mQueue.remove();
+            notifyAll();
             return url;
-        } else {
-            mThreadNum--;
-            if (mThreadNum > 0) {
-                wait();
-                mThreadNum++;
-            } else {
-                notifyAll();
-                return null;
-            }
         }
         return null;
     }
 
+    /**
+     * Already parsed URL join queue
+     * @param url Not parse URL
+     */
     public synchronized void enQueueUrl(String url) {
         if (!mQueue.contains(url)) {
             if (!url.equals("") && !url.equals(null)) {
-                Doc_ID++;
-                try {
-                    parseH.parse(url, Doc_ID);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
                 mQueue.add(url);
                 notifyAll();
-
             }
         }
+    }
 
+    /**
+     * Test URL status
+     */
+    public Boolean http_status_filter(String url){
+
+        HttpResponse response;
+        try {
+            DefaultHttpClient httpclient = new DefaultHttpClient();
+            HttpGet httpget=new HttpGet(url);
+            httpget.getParams().setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 3000);
+
+            response = httpclient.execute(httpget);
+            StatusLine status=response.getStatusLine();
+            System.out.print(status.getStatusCode());
+            if(status.getStatusCode()==200){
+                return true;
+            }else{
+                return false;
+            }
+
+        } catch (ClientProtocolException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return false;
+        }catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            mTimeOutList.add(url);//timeout urls are saved
+
+            m_list.add(url);//timeout urls are saved in already used url
+
+            System.out.println("TimeOut url :"+url);
+            return false;
+        }
+    }
+
+    public void setmListener(pageCrawlerListener mListener) {
+        this.mListener = mListener;
+    }
+
+    public void doSearch() {
+        for (int i = 0; i < mThreadNum; i++) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    mListener.parseH5();
+                }
+            }).start();
+        }
+    }
+
+    public interface pageCrawlerListener{
+        public void parseH5();
     }
 }
