@@ -40,7 +40,6 @@ public class JDBCConnect {
 			
 //			while(re.next()){
 //				System.out.println(re.getString("doc_id")+" "+re.getString("url"));
-//				
 //			}
 		
 		}catch(Exception e){

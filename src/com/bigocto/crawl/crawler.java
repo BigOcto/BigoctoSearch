@@ -18,7 +18,8 @@ import java.util.Queue;
  */
 public abstract class crawler{
     public int mThreadNum = 1;
-    public static Queue<String> mQueue = new LinkedList<String>();
+    public int mParseMostDepth = 1;
+    public static Queue<urlObj> mQueue = new LinkedList<urlObj>();
     public static List<String> m_list = new LinkedList<String>();
     public static List<String> mTimeOutList = new LinkedList<String>();
 
@@ -26,6 +27,10 @@ public abstract class crawler{
 
     public void setThreadNum(int threadNum) {
         mThreadNum = threadNum;
+    }
+
+    public void setmParseMostDepth(int mParseMostDepth) {
+        this.mParseMostDepth = mParseMostDepth;
     }
 
     public static boolean list_filter(String url, List<String> list) {
@@ -42,23 +47,25 @@ public abstract class crawler{
      * @return URL
      * @throws Exception
      */
-    public synchronized String deQueueUrl() throws Exception {
+    public synchronized urlObj deQueueUrl() throws Exception {
         if (mQueue != null) {
-            String url = mQueue.remove();
+            urlObj  urlObj = mQueue.poll();
             notifyAll();
-            return url;
+            return urlObj;
+        }else {
+            wait();
         }
         return null;
     }
 
     /**
      * Already parsed URL join queue
-     * @param url Not parse URL
+     * @param urlObj Not parse URL
      */
-    public synchronized void enQueueUrl(String url) {
-        if (!mQueue.contains(url)) {
-            if (!url.equals("") && !url.equals(null)) {
-                mQueue.add(url);
+    public synchronized void enQueueUrl(urlObj urlObj) {
+        if (!mQueue.contains(urlObj)) {
+            if (!urlObj.getUrl().equals("") && !urlObj.equals(null)) {
+                mQueue.add(urlObj);
                 notifyAll();
             }
         }
@@ -109,7 +116,9 @@ public abstract class crawler{
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    mListener.parseH5();
+                    while (true){
+                        mListener.parseH5();
+                    }
                 }
             }).start();
         }
