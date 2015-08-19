@@ -11,6 +11,7 @@ import java.util.List;
 
 
 /**
+ *
  * @author bigocto(zhangyu)
  * @date 2014/6
  */
@@ -34,18 +35,22 @@ public class onePageCrawler extends crawler implements crawler.pageCrawlerListen
                 e1.printStackTrace();
             }
             if (urlObj !=null && urlObj.getUrl()!= null && !urlObj.getUrl().isEmpty()){
-                list_bool = list_filter(urlObj.getUrl(), m_list);
+                list_bool = list_filter(getUrlNames(urlObj.getUrl()), m_list);
                 status_bool = http_status_filter(urlObj.getUrl());
                 if (list_bool) {
                     if (status_bool) {
                         try {
-                            if(urlObj.getDepth() < mSelectList.size()){
+                            //TODO Default last page content parse
+                            if(urlObj.getDepth() < mSelectList.size()-1){
                                 parseH5Urls(mSelectList.get(urlObj.getDepth()), urlObj);
+                            }
+                            if (urlObj.getDepth() == mSelectList.size()-1){
+                                parseH5Content(mSelectList.get(urlObj.getDepth()),urlObj);
                             }
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                        m_list.add(urlObj.getUrl());//the url that is already traveled
+                        m_list.add(getUrlNames(urlObj.getUrl()));//the url that is already traveled
                     }
                 }
             }
@@ -56,9 +61,14 @@ public class onePageCrawler extends crawler implements crawler.pageCrawlerListen
         Document doc = Jsoup.connect(urlObj.getUrl()).get();
         Elements elements = doc.select(selectObj.getDocumentSelect());
         System.out.println("Fetching : " + urlObj.getUrl());
-        int i = 0;
+        for (int i = 0; i< elements.size(); i++){
+            Element element = elements.get(i);
+            if (i==0){
+                JDBCConnect.getInstance().
+            }
+        }
         for (Element link : elements) {
-
+            System.out.println(link.text());
         }
         return null;
     }
@@ -74,7 +84,7 @@ public class onePageCrawler extends crawler implements crawler.pageCrawlerListen
             if (!link.attr("abs:href").equals("") && link.attr("abs:href") != null) {
                 if (link.attr("abs:href").contains(selectObj.getUrlContain())) {
                     urlObj ob = new urlObj();
-                    ob.setDepth(selectObj.getParseDepth());
+                    ob.setDepth(selectObj.getParseDepth()+1);
                     ob.setUrl(link.attr("abs:href"));
                     enQueueUrl(ob);
                     System.out.println(" URL: " + (++i) + " " + link.attr("abs:href"));
@@ -83,25 +93,9 @@ public class onePageCrawler extends crawler implements crawler.pageCrawlerListen
         }
     }
 
-    public static void main(String[] args) throws IOException {
-
-        String url = "http://www.shicimingju.com/book/sanguoyanyi/1.html";
-        urlObj urlObj = new urlObj();
-        urlObj.setUrl(url);
-        urlObj.setDepth(0);
-        mQueue.add(urlObj);
-
-        selectObj s1 = new selectObj(1, "a[href]", "/book/");
-        selectObj s2 = new selectObj(2, "a[href]", "/book/");
-        selectObj s3 = new selectObj(1, "div.bookyuanjiao h2 , p", "");
-        List<selectObj> list = new ArrayList<selectObj>();
-        list.add(s1);
-        list.add(s2);
-        list.add(s3);
-
-        onePageCrawler c2 = new onePageCrawler(list);
-        c2.setmListener(c2);
-        c2.doSearch();
-        c2.setThreadNum(5);
+    private String getUrlNames(String url){
+        String[] s = url.split("\\.", 2);
+        return s[1];
     }
+
 }

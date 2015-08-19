@@ -62,10 +62,7 @@ public class ParseHtml {
             		
                    // System.out.println(str_t);
             	}
-        		
         	}
-        	
-
         }
         
         
@@ -136,14 +133,12 @@ public class ParseHtml {
         /*************connect mysql************/
     	JDBCConnect jd=new JDBCConnect();
     	
-    	oc_ID=jd.Doc_url_unique(oc_ID,doc_id, url);
 
     	Iterator it_=map.entrySet().iterator();
     	Map.Entry entry;
     	while(it_.hasNext()){
     		entry=(Entry) it_.next();
 
-    	 	jd.Term_value_unique(entry.getKey().toString(),item_ID, term_ID, doc_id, (Integer) entry.getValue());
     	 	//jd.dictionary_up(term_ID, entry.getKey().toString());
             term_ID++;
             item_ID++;
@@ -177,28 +172,5 @@ public class ParseHtml {
 		}
 		
 		return list;
-	}
-	public static void main(String[] args) throws IOException {
-		// TODO Auto-generated method stub
-//		List<String> li=divide_sentence("abc,defg.hij;klm");
-//		
-//		Iterator<String> it= li.iterator();
-//		while(it.hasNext()){
-//			System.out.println(it.next());
-//		}
-		
-//		parse("http://www.baidu.com");
-		
-//		HashMap<String,Integer> map1=parse("http://www.google.com");
-//		
-//    	Iterator it_=map1.entrySet().iterator();
-//    	Map.Entry entry;
-//    	while(it_.hasNext()){
-//    		entry=(Entry) it_.next();
-//    		
-//    		System.out.println(entry.getKey());
-//    	}
-		
-	//	parse("http://www.goole.com", 0);
 	}
 }

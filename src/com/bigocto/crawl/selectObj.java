@@ -8,7 +8,7 @@ package com.bigocto.crawl;
  */
 public class selectObj {
 
-    int parseDepth;   //解析URL下级深度
+    int parseDepth;   //解析URL深度
     String documentSelect;
     String urlContain;
 
