@@ -34,6 +34,11 @@ public abstract class crawler{
     }
 
     public static boolean list_filter(String url, List<String> list) {
+        if(list.size() > 1000){
+            for (int i = 0; i< list.size()-1000; i++){
+                list.remove(i);
+            }
+        }
         for (String aList : list) {
             if (url.equals(aList)) {
                 return false;

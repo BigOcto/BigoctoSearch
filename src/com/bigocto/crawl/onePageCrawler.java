@@ -41,12 +41,31 @@ public class onePageCrawler extends crawler implements crawler.pageCrawlerListen
                     if (status_bool) {
                         try {
                             //TODO Default last page content parse
-                            if(urlObj.getDepth() < mSelectList.size()-1){
-                                parseH5Urls(mSelectList.get(urlObj.getDepth()), urlObj);
+                            if(urlObj.getDepth() == 0){
+                                for (urlObj url : parseH5Urls(mSelectList.get(urlObj.getDepth()), urlObj)){
+                                    enQueueUrl(url);
+                                }
                             }
-                            if (urlObj.getDepth() == mSelectList.size()-1){
-                                parseH5Content(mSelectList.get(urlObj.getDepth()),urlObj);
+
+                            if (urlObj.getDepth() == 1){
+                                article article = parseH5Introduction(mSelectList.get(3), urlObj);
+                                JDBCConnect.getInstance().InsertArticle(article.getName(),article.getAuthor(),article.getYears(),urlObj.getUrl(),article.getInstroduction());
+
+                                int id = JDBCConnect.getInstance().SelctArticleID(urlObj.getUrl());
+                                for (urlObj url:parseH5Urls(mSelectList.get(urlObj.getDepth()), urlObj)){
+                                    if (list_filter(url.getUrl(),m_list)){
+                                        JDBCConnect.getInstance().InsertUrls(id,url.getUrl());
+                                        enQueueUrl(url);
+                                    }
+                                }
+
                             }
+                            if (urlObj.getDepth() == 2){
+                                listArticle listArticle = parseH5Content(mSelectList.get(urlObj.getDepth()), urlObj);
+                                int id = JDBCConnect.getInstance().SelctUrls(urlObj.getUrl());
+                                JDBCConnect.getInstance().InsertContent(listArticle.getList_name(), listArticle.getContent(),id);
+                            }
+
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -57,26 +76,66 @@ public class onePageCrawler extends crawler implements crawler.pageCrawlerListen
         }
     }
 
-    public article parseH5Content(selectObj selectObj, urlObj urlObj) throws IOException {
+    public article parseH5Introduction(selectObj selectObj, urlObj urlObj) throws IOException {
         Document doc = Jsoup.connect(urlObj.getUrl()).get();
         Elements elements = doc.select(selectObj.getDocumentSelect());
         System.out.println("Fetching : " + urlObj.getUrl());
-        for (int i = 0; i< elements.size(); i++){
+
+        article article  = new article();
+        for (int i =0; i< elements.size(); i++){
             Element element = elements.get(i);
-            if (i==0){
-                JDBCConnect.getInstance().
+            String t = element.text();
+            switch (i){
+                case 0:
+                    article.setName(t.substring(1,t.length()-1));
+                    break;
+                case 1:
+                    article.setInstroduction(t.substring(3,t.length()));
+                    break;
+                case 2:
+                    article.setAuthor(t.substring(3,t.length()));
+                    break;
+                case 3:
+                    article.setYears(t.substring(3,t.length()));
+                    break;
             }
         }
         for (Element link : elements) {
             System.out.println(link.text());
         }
-        return null;
+        return article;
+    }
+    /**
+     * Parse article content
+     */
+    public listArticle parseH5Content(selectObj selectObj, urlObj urlObj) throws IOException {
+        Document doc = Jsoup.connect(urlObj.getUrl()).get();
+        Elements elements = doc.select(selectObj.getDocumentSelect());
+        System.out.println("Fetching : " + urlObj.getUrl());
+        String list_name = null;
+        StringBuffer content = new StringBuffer();
+        for (int i = 0; i< elements.size(); i++){
+            Element element = elements.get(i);
+            if (i==0){
+                list_name = element.text();
+            }else {
+                content.append(element.text());
+            }
+        }
+        listArticle listArticle = new listArticle();
+        listArticle.setList_name(list_name);
+        listArticle.setContent(String.valueOf(content));
+        for (Element link : elements) {
+            System.out.println(link.text());
+        }
+        return listArticle;
     }
 
-    public void parseH5Urls(selectObj selectObj, urlObj urlObj) throws IOException {
+    public List<urlObj> parseH5Urls(selectObj selectObj, urlObj urlObj) throws IOException {
 
         Document doc = Jsoup.connect(urlObj.getUrl()).get();
         Elements elements = doc.select(selectObj.getDocumentSelect());
+        List<urlObj> list = new ArrayList<urlObj>();
         System.out.println("Fetching : " + urlObj.getUrl());
         int i = 0;
         for (Element link : elements) {
@@ -86,11 +145,13 @@ public class onePageCrawler extends crawler implements crawler.pageCrawlerListen
                     urlObj ob = new urlObj();
                     ob.setDepth(selectObj.getParseDepth()+1);
                     ob.setUrl(link.attr("abs:href"));
-                    enQueueUrl(ob);
+                    list.add(ob);
+//                    enQueueUrl(ob);
                     System.out.println(" URL: " + (++i) + " " + link.attr("abs:href"));
                 }
             }
         }
+        return list;
     }
 
     private String getUrlNames(String url){

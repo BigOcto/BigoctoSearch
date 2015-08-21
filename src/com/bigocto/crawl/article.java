@@ -8,6 +8,7 @@ public class article {
     private String author;
     private String name;
     private String years;
+    private String instroduction;
 
     public String getAuthor() {
         return author;
@@ -31,5 +32,13 @@ public class article {
 
     public void setYears(String years) {
         this.years = years;
+    }
+
+    public String getInstroduction() {
+        return instroduction;
+    }
+
+    public void setInstroduction(String instroduction) {
+        this.instroduction = instroduction;
     }
 }
